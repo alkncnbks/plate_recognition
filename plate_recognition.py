@@ -41,10 +41,22 @@ def deskew(image):
     rotated = cv2.warpAffine(image, M, (w, h), flags=cv2.INTER_CUBIC, borderMode=cv2.BORDER_REPLICATE)
     return rotated
 
+def arac_durumu_sorgula(plaka):
+    ref = db.reference('araclar').child(plaka)
+    data = ref.get()
+    if data:
+        sigorta = data.get("sigorta", "bilgi yok")
+        muayene = data.get("muayene", "bilgi yok")
+        print(f"Plaka: {plaka} | Sigorta: {sigorta} | Muayene: {muayene}")
+        return sigorta, muayene
+    else:
+        print(f"Plaka: {plaka} için veri bulunamadı.")
+        return None, None
+
+
 cap = cv2.VideoCapture(0, cv2.CAP_AVFOUNDATION)
 cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
 cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
-
 while True:
     ret, frame = cap.read()
     if not ret:
@@ -86,6 +98,8 @@ while True:
                 cv2.putText(frame, text, (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (255, 0, 0), 3)
                 log_plaka(text)
                 firebase_log(text)
+                sigorta, muayene = arac_durumu_sorgula(text)
+
 
             cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 255, 0), 2)
             break
